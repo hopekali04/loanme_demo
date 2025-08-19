@@ -1,10 +1,10 @@
-package com.loanme.loanme_demo;
+package com.fintech.loanportal;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class LoanmeDemoApplicationTests {
+class LoanPortalApplicationTests {
 
 	@Test
 	void contextLoads() {

@@ -1,13 +1,13 @@
-package com.loanme.loanme_demo;
+package com.fintech.loanportal;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class LoanmeDemoApplication {
+public class LoanPortalApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(LoanmeDemoApplication.class, args);
+		SpringApplication.run(LoanPortalApplication.class, args);
 	}
 
 }

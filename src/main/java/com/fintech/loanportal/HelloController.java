@@ -1,4 +1,4 @@
-package com.loanme.loanme_demo;
+package com.fintech.loanportal;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

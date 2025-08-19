@@ -8,10 +8,10 @@
 		<version>3.5.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.loanme</groupId>
-	<artifactId>loanme_demo</artifactId>
+	<groupId>com.fintech</groupId>
+	<artifactId>loanportal</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>loanme_demo</name>
+	<name>loanportal</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>
