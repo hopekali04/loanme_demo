@@ -1,0 +1,121 @@
+version: '3.8'
+
+# Fintech Loan Portal - Development Environment
+# Complete multi-container setup with all services
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: loan_portal_db
+    environment:
+      POSTGRES_DB: loanportal
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/seed-data.sql:/docker-entrypoint-initdb.d/02-seed-data.sql
+    networks:
+      - loan_portal_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d loanportal"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: loan_portal_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - loan_portal_network
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redis123
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+
+  # Spring Boot Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: loan_portal_backend
+    environment:
+      # Database Configuration
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/loanportal
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin123
+      
+      # Redis Configuration
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: redis123
+      
+      # JWT Configuration
+      APP_JWT_SECRET: mySecretKey123456789012345678901234567890
+      APP_JWT_EXPIRATION: 86400
+      APP_JWT_REFRESH_EXPIRATION: 604800
+      
+      # Application Configuration
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_JPA_SHOW_SQL: false
+      
+      # Logging Configuration
+      LOGGING_LEVEL_COM_FINTECH_LOANPORTAL: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: INFO
+      
+      # CORS Configuration
+      APP_CORS_ALLOWED_ORIGINS: http://localhost:3000,http://frontend:3000
+      
+      # File Upload Configuration
+      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: 10MB
+      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: 10MB
+      
+      # Actuator Configuration
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: when_authorized
+      
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/logs:/app/logs
+      - ./backend/uploads:/app/uploads
+    networks:
+      - loan_portal_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=development
+    container_name: loan_portal_frontend
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:8080/api
+      - REACT_APP_JWT_SECRET=mySecretKey123456789012345678901234567890
