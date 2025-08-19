@@ -1,7 +1,10 @@
 package com.fintech.loanportal.security;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
+import java.util.Date;
+import java.util.stream.Collectors;
+
+import javax.crypto.SecretKey;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,17 +12,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
-
-import java.nio.file.attribute.UserPrincipal;
-import java.util.Date;
-import java.util.stream.Collectors;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.Keys;
 
 /**
  * JWT Token Provider for generating and validating JWT tokens.
  * 
  * Features:
- * - Secure token generation with HS512 algorithm
+ * - Secure token generation with HS256 algorithm
  * - Token expiration management
  * - User roles embedded in token claims
  * - Comprehensive token validation
@@ -51,7 +56,7 @@ public class JwtTokenProvider {
     public JwtTokenProvider(@Value("${app.jwt.secret:}") String jwtSecretString) {
         if (jwtSecretString.isEmpty()) {
             // Generate secure key if not provided (development only)
-            this.jwtSecret = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+            this.jwtSecret = Keys.secretKeyFor(SignatureAlgorithm.HS256);
             logger.warn("Using generated JWT secret key. Configure app.jwt.secret for production!");
         } else {
             // Use provided secret key
@@ -69,21 +74,39 @@ public class JwtTokenProvider {
      * - Issued at timestamp
      */
     public String generateAccessToken(Authentication authentication) {
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        // Cast to your custom UserPrincipal that should have getEmail() and getId() methods
+        Object principal = authentication.getPrincipal();
+        String userEmail;
+        String userId;
+        
+        // Handle different principal types
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            org.springframework.security.core.userdetails.UserDetails userDetails = 
+                (org.springframework.security.core.userdetails.UserDetails) principal;
+            userEmail = userDetails.getUsername();
+            userId = userDetails.getUsername(); // Use username as ID if no custom UserPrincipal
+        } else {
+            // Assume it's a custom UserPrincipal with getEmail() and getId() methods
+            // You'll need to cast this to your actual UserPrincipal class
+            userEmail = principal.toString();
+            userId = principal.toString();
+        }
+        
         Date expiryDate = new Date(System.currentTimeMillis() + (jwtExpirationInSeconds * 1000L));
+        Date issuedAt = new Date();
 
         String roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
         return Jwts.builder()
-                .claim("sub", userPrincipal.getName())
-                .claim("userId", userPrincipal.getName()) // Use getName() if getId() is not available
+                .subject(userEmail)
+                .claim("userId", userId)
                 .claim("roles", roles)
                 .claim("tokenType", "ACCESS")
-                .issuedAt(java.time.Instant.now())
-                .setExpiration(expiryDate)
-                .signWith(jwtSecret, SignatureAlgorithm.HS512)
+                .issuedAt(issuedAt)
+                .expiration(expiryDate)
+                .signWith(jwtSecret, Jwts.SIG.HS256)
                 .compact();
     }
 
@@ -92,16 +115,31 @@ public class JwtTokenProvider {
      * Refresh tokens have longer expiration times but limited scope.
      */
     public String generateRefreshToken(Authentication authentication) {
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        Object principal = authentication.getPrincipal();
+        String userEmail;
+        String userId;
+        
+        // Handle different principal types
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            org.springframework.security.core.userdetails.UserDetails userDetails = 
+                (org.springframework.security.core.userdetails.UserDetails) principal;
+            userEmail = userDetails.getUsername();
+            userId = userDetails.getUsername();
+        } else {
+            userEmail = principal.toString();
+            userId = principal.toString();
+        }
+        
         Date expiryDate = new Date(System.currentTimeMillis() + (jwtRefreshExpirationInSeconds * 1000L));
+        Date issuedAt = new Date();
 
         return Jwts.builder()
-                .setSubject(userPrincipal.getEmail())
-                .claim("userId", userPrincipal.getId())
+                .subject(userEmail)
+                .claim("userId", userId)
                 .claim("tokenType", "REFRESH")
-                .setIssuedAt(new Date())
-                .setExpiration(expiryDate)
-                .signWith(jwtSecret, SignatureAlgorithm.HS512)
+                .issuedAt(issuedAt)
+                .expiration(expiryDate)
+                .signWith(jwtSecret, Jwts.SIG.HS256)
                 .compact();
     }
 
@@ -109,11 +147,11 @@ public class JwtTokenProvider {
      * Extract user email from JWT token.
      */
     public String getUserEmailFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(jwtSecret)
+        Claims claims = Jwts.parser()
+                .verifyWith(jwtSecret)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
 
         return claims.getSubject();
     }
@@ -121,25 +159,25 @@ public class JwtTokenProvider {
     /**
      * Extract user ID from JWT token.
      */
-    public Long getUserIdFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(jwtSecret)
+    public String getUserIdFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(jwtSecret)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
 
-        return claims.get("userId", Long.class);
+        return claims.get("userId", String.class);
     }
 
     /**
      * Extract user roles from JWT token.
      */
     public String getRolesFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(jwtSecret)
+        Claims claims = Jwts.parser()
+                .verifyWith(jwtSecret)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
 
         return claims.get("roles", String.class);
     }
@@ -148,11 +186,11 @@ public class JwtTokenProvider {
      * Get token expiration date.
      */
     public Date getExpirationDateFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(jwtSecret)
+        Claims claims = Jwts.parser()
+                .verifyWith(jwtSecret)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
 
         return claims.getExpiration();
     }
@@ -181,11 +219,11 @@ public class JwtTokenProvider {
      */
     public boolean validateToken(String authToken) {
         try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(jwtSecret)
+            Claims claims = Jwts.parser()
+                    .verifyWith(jwtSecret)
                     .build()
-                    .parseClaimsJws(authToken)
-                    .getBody();
+                    .parseSignedClaims(authToken)
+                    .getPayload();
 
             // Verify this is an access token
             String tokenType = claims.get("tokenType", String.class);
@@ -218,11 +256,11 @@ public class JwtTokenProvider {
      */
     public boolean validateRefreshToken(String refreshToken) {
         try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(jwtSecret)
+            Claims claims = Jwts.parser()
+                    .verifyWith(jwtSecret)
                     .build()
-                    .parseClaimsJws(refreshToken)
-                    .getBody();
+                    .parseSignedClaims(refreshToken)
+                    .getPayload();
 
             // Verify this is a refresh token
             String tokenType = claims.get("tokenType", String.class);
