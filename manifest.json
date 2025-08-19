@@ -1,0 +1,125 @@
+{
+  "project": "Fintech Loan Application Portal",
+  "description": "Enterprise-grade loan calculator and application management system",
+  "architecture": "Full-stack microservices with Spring Boot backend and React frontend",
+  "structure": {
+    "root": {
+      "README.md": "Main project documentation",
+      "docker-compose.yml": "Multi-container orchestration",
+      ".env.example": "Environment variables template",
+      "postman-collection.json": "API testing collection"
+    },
+    "backend": {
+      "src/main/java/com/fintech/loanportal": {
+        "LoanPortalApplication.java": "Spring Boot main class",
+        "config/": {
+          "SecurityConfig.java": "Spring Security configuration",
+          "DatabaseConfig.java": "Database connection setup",
+          "SwaggerConfig.java": "API documentation config"
+        },
+        "controller/": {
+          "AuthController.java": "Authentication endpoints",
+          "LoanController.java": "Loan calculation and application APIs",
+          "AdminController.java": "Admin dashboard endpoints",
+          "UserController.java": "User management endpoints"
+        },
+        "service/": {
+          "UserService.java": "User business logic",
+          "LoanCalculationService.java": "Loan calculation algorithms",
+          "LoanApplicationService.java": "Application processing logic",
+          "AuditService.java": "Audit trail management"
+        },
+        "repository/": {
+          "UserRepository.java": "User data access",
+          "LoanApplicationRepository.java": "Loan application data access",
+          "AuditLogRepository.java": "Audit trail data access"
+        },
+        "entity/": {
+          "User.java": "User entity model",
+          "LoanApplication.java": "Loan application entity",
+          "AuditLog.java": "Audit trail entity",
+          "Role.java": "User role entity"
+        },
+        "dto/": {
+          "LoginRequest.java": "Login data transfer object",
+          "LoanCalculationRequest.java": "Loan calculation request DTO",
+          "LoanApplicationDTO.java": "Loan application DTO"
+        },
+        "security/": {
+          "JwtAuthenticationFilter.java": "JWT token filter",
+          "JwtTokenProvider.java": "JWT token utility",
+          "UserPrincipal.java": "Security user principal"
+        },
+        "exception/": {
+          "GlobalExceptionHandler.java": "Centralized exception handling"
+        }
+      },
+      "src/test/java/": {
+        "controller/": "Controller unit tests",
+        "service/": "Service layer tests",
+        "integration/": "Integration tests"
+      },
+      "src/main/resources/": {
+        "application.yml": "Spring Boot configuration",
+        "db/migration/": "Database migration scripts"
+      },
+      "pom.xml": "Maven dependencies and build config",
+      "Dockerfile": "Backend containerization"
+    },
+    "frontend": {
+      "src/": {
+        "components/": {
+          "common/": "Reusable UI components",
+          "auth/": "Authentication components",
+          "loan/": "Loan-related components",
+          "admin/": "Admin dashboard components"
+        },
+        "pages/": {
+          "HomePage.tsx": "Landing page with calculator",
+          "LoginPage.tsx": "User authentication",
+          "DashboardPage.tsx": "User dashboard",
+          "AdminPage.tsx": "Admin panel"
+        },
+        "services/": {
+          "api.ts": "API client configuration",
+          "authService.ts": "Authentication service",
+          "loanService.ts": "Loan calculation service"
+        },
+        "hooks/": {
+          "useAuth.ts": "Authentication hook",
+          "useLoanCalculation.ts": "Loan calculation hook"
+        },
+        "types/": {
+          "index.ts": "TypeScript type definitions"
+        },
+        "utils/": {
+          "validation.ts": "Form validation utilities",
+          "formatters.ts": "Data formatting utilities"
+        }
+      },
+      "public/": "Static assets",
+      "package.json": "Node.js dependencies",
+      "tailwind.config.js": "Tailwind CSS configuration",
+      "Dockerfile": "Frontend containerization"
+    },
+    "database": {
+      "schema.sql": "Database schema definition",
+      "seed-data.sql": "Sample data for testing",
+      "migrations/": "Database migration files"
+    },
+    "docs": {
+      "API.md": "API documentation",
+      "SECURITY.md": "Security implementation details",
+      "DEPLOYMENT.md": "Deployment guide",
+      "TESTING.md": "Testing strategy and examples"
+    }
+  },
+  "tech_stack": {
+    "backend": "Java 17, Spring Boot 3.x, Spring Security, JPA/Hibernate",
+    "frontend": "React 18, TypeScript, Tailwind CSS, React Hook Form",
+    "database": "PostgreSQL with Redis for caching",
+    "security": "JWT, BCrypt, OWASP compliance",
+    "testing": "JUnit 5, Testcontainers, Jest, Cypress",
+    "deployment": "Docker, Docker Compose, CI/CD ready"
+  }
+}
