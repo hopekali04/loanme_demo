@@ -77,19 +77,28 @@ public class JwtTokenProvider {
         // Cast to your custom UserPrincipal that should have getEmail() and getId() methods
         Object principal = authentication.getPrincipal();
         String userEmail;
-        String userId;
+        Long userId;
         
         // Handle different principal types
-        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+        if (principal instanceof UserPrincipal) {
+            UserPrincipal userPrincipal = (UserPrincipal) principal;
+            userEmail = userPrincipal.getUsername(); // This returns email
+            userId = userPrincipal.getId(); // This returns Long
+        } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
             org.springframework.security.core.userdetails.UserDetails userDetails = 
                 (org.springframework.security.core.userdetails.UserDetails) principal;
             userEmail = userDetails.getUsername();
-            userId = userDetails.getUsername(); // Use username as ID if no custom UserPrincipal
+            
+            // Fallback: try to parse username as Long, or use a default value
+            try {
+                userId = Long.parseLong(userDetails.getUsername());
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("Unable to extract user ID from authentication principal");
+            }
         } else {
-            // Assume it's a custom UserPrincipal with getEmail() and getId() methods
-            // You'll need to cast this to your actual UserPrincipal class
+            // Handle other cases
             userEmail = principal.toString();
-            userId = principal.toString();
+            throw new RuntimeException("Unsupported principal type: " + principal.getClass());
         }
         
         Date expiryDate = new Date(System.currentTimeMillis() + (jwtExpirationInSeconds * 1000L));
@@ -159,14 +168,14 @@ public class JwtTokenProvider {
     /**
      * Extract user ID from JWT token.
      */
-    public String getUserIdFromToken(String token) {
+    public Long getUserIdFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(jwtSecret)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
 
-        return claims.get("userId", String.class);
+        return claims.get("userId", Long.class);
     }
 
     /**
