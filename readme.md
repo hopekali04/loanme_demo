@@ -5,10 +5,10 @@ A comprehensive loan calculator and application management system built with ent
 ## 🏗️ Architecture Overview
 
 - **Backend**: Spring Boot 3.x with Java 17, implementing clean architecture patterns
-- **Frontend**: React 18 with TypeScript for type-safe, scalable UI development  
+- **Frontend**: SvelteKit 2.x with Tailwind CSS for modern, Apple-inspired UI development  
 - **Database**: PostgreSQL with Redis caching for optimal performance
 - **Security**: JWT-based authentication with Spring Security, BCrypt password hashing
-- **Testing**: Comprehensive test suite with JUnit, Testcontainers, and Cypress
+- **Testing**: Comprehensive test suite with JUnit, Testcontainers, and Playwright
 - **Deployment**: Docker containerization with CI/CD pipeline support
 
 ## 🚀 Features
@@ -62,13 +62,12 @@ docker-compose up -d
 ### Local Development Setup
 ```bash
 # Backend
-cd backend
 ./mvnw spring-boot:run
 
 # Frontend (in another terminal)
-cd frontend
+cd frontend/loanme-ui
 npm install
-npm start
+npm run dev
 
 # Database (PostgreSQL with Docker)
 docker run -d --name postgres-loan \
@@ -116,7 +115,6 @@ docker run -d --name postgres-loan \
 
 ### Backend Testing
 ```bash
-cd backend
 ./mvnw test                    # Unit tests
 ./mvnw test -Pintegration      # Integration tests
 ./mvnw verify                  # All tests + code coverage
@@ -124,7 +122,7 @@ cd backend
 
 ### Frontend Testing  
 ```bash
-cd frontend
+cd frontend/loanme-ui
 npm test                       # Unit tests
 npm run test:e2e              # End-to-end tests
 npm run test:coverage         # Coverage report
