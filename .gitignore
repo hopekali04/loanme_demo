@@ -5,6 +5,8 @@ target/
 !**/src/test/**/target/
 .env
 node_modules/
+.svelte-kit/
+
 ### STS ###
 .apt_generated
 .classpath
