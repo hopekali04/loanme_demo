@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+.github
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# CI/CD
+.github/workflows/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Logs
+*.log
+
+# Testing
+src/test/
+
+# Local environment
+.env
+.env.local
