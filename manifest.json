@@ -1,13 +1,13 @@
 {
   "project": "Fintech Loan Application Portal",
   "description": "Enterprise-grade loan calculator and application management system",
-  "architecture": "Full-stack microservices with Spring Boot backend and React frontend",
+  "architecture": "Full-stack microservices with Spring Boot backend and SvelteKit frontend",
   "structure": {
     "root": {
       "README.md": "Main project documentation",
       "docker-compose.yml": "Multi-container orchestration",
       ".env.example": "Environment variables template",
-      "postman-collection.json": "API testing collection"
+      "manifest.json": "Project structure manifest"
     },
     "backend": {
       "src/main/java/com/fintech/loanportal": {
@@ -67,40 +67,34 @@
       "Dockerfile": "Backend containerization"
     },
     "frontend": {
-      "src/": {
-        "components/": {
-          "common/": "Reusable UI components",
-          "auth/": "Authentication components",
-          "loan/": "Loan-related components",
-          "admin/": "Admin dashboard components"
+      "loanme-ui/": {
+        "src/": {
+          "lib/": {
+            "components/": {
+              "ui/": "Generic UI components",
+              "auth/": "Authentication components",
+              "loan/": "Loan-related components",
+              "admin/": "Admin dashboard components"
+            },
+            "utils/": "Utility functions"
+          },
+          "routes/": {
+            "+page.svelte": "Homepage with calculator",
+            "login/": "Authentication pages",
+            "register/": "Registration pages",
+            "apply/": "Loan application pages",
+            "dashboard/": "User dashboard pages",
+            "admin/": "Admin panel pages"
+          },
+          "app.css": "Global styles",
+          "app.html": "Base HTML template"
         },
-        "pages/": {
-          "HomePage.tsx": "Landing page with calculator",
-          "LoginPage.tsx": "User authentication",
-          "DashboardPage.tsx": "User dashboard",
-          "AdminPage.tsx": "Admin panel"
-        },
-        "services/": {
-          "api.ts": "API client configuration",
-          "authService.ts": "Authentication service",
-          "loanService.ts": "Loan calculation service"
-        },
-        "hooks/": {
-          "useAuth.ts": "Authentication hook",
-          "useLoanCalculation.ts": "Loan calculation hook"
-        },
-        "types/": {
-          "index.ts": "TypeScript type definitions"
-        },
-        "utils/": {
-          "validation.ts": "Form validation utilities",
-          "formatters.ts": "Data formatting utilities"
-        }
-      },
-      "public/": "Static assets",
-      "package.json": "Node.js dependencies",
-      "tailwind.config.js": "Tailwind CSS configuration",
-      "Dockerfile": "Frontend containerization"
+        "static/": "Static assets",
+        "package.json": "Node.js dependencies",
+        "svelte.config.js": "SvelteKit configuration",
+        "tailwind.config.js": "Tailwind CSS configuration",
+        "vite.config.js": "Vite build configuration"
+      }
     },
     "database": {
       "schema.sql": "Database schema definition",
@@ -109,17 +103,17 @@
     },
     "docs": {
       "API.md": "API documentation",
-      "SECURITY.md": "Security implementation details",
-      "DEPLOYMENT.md": "Deployment guide",
-      "TESTING.md": "Testing strategy and examples"
+      "Architecture.md": "System architecture details",
+      "UI.md": "Frontend component documentation",
+      "setup.md": "Development environment setup"
     }
   },
   "tech_stack": {
     "backend": "Java 17, Spring Boot 3.x, Spring Security, JPA/Hibernate",
-    "frontend": "React 18, TypeScript, Tailwind CSS, React Hook Form",
+    "frontend": "SvelteKit 2.x, Tailwind CSS, Vite",
     "database": "PostgreSQL with Redis for caching",
     "security": "JWT, BCrypt, OWASP compliance",
-    "testing": "JUnit 5, Testcontainers, Jest, Cypress",
+    "testing": "JUnit 5, Testcontainers, Playwright",
     "deployment": "Docker, Docker Compose, CI/CD ready"
   }
 }
